@@ -1,0 +1,10 @@
+# python libraries required for the project
+
+# for reading pdf
+PyPDF2
+
+# for pinecode
+pinecone
+
+# for dataframe 
+pandas
