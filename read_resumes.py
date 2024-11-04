@@ -18,7 +18,6 @@ def extract_texts_from_pdfs_in_folder(folder_path):
         for text in raw_data:
             print(text)
     """
-    # Scan all PDF files in the specified folder
     print(f"Scanning resumes/PDF files in directory: {folder_path}.")
     pdf_files = [file for file in os.listdir(folder_path) if file.endswith('.pdf')]
 
@@ -28,7 +27,6 @@ def extract_texts_from_pdfs_in_folder(folder_path):
 
     raw_data =[]
 
-    # Loop through each PDF file and extract text
     for pdf_file in pdf_files:
         file_path = os.path.join(folder_path, pdf_file)
         print(f"Extracting text from {pdf_file}...")
@@ -38,17 +36,13 @@ def extract_texts_from_pdfs_in_folder(folder_path):
             extracted_text = extract_all_text_from_pdf(file_path)
             
             #print(f"Text from {pdf_file}:\n{extracted_text}\n{'-'*40}\n{'-'*40}\n")
-            #raw_data.append(extracted_text)
             raw_data.append({pdf_file: extracted_text}) # [{'PID','text'},{'PID','text'},{'PID','text'}]#TODO replace filname with PID
             
         except Exception as e:
             print(f"Error reading {pdf_file}: {e}")
     
     return raw_data
-    #pdf_files_list = [list(item.keys())[0] for item in raw_data]
-    #extracted_texts = [list(item.values())[0] for item in raw_data]
 
 if __name__ == "__main__":
-    # Specify the folder containing CV/PDF files
     folder_path = "resume.ranker/CV" #Path("D:/523/Resume.classifier/resume.ranker/CV")  
     extract_texts_from_pdfs_in_folder(folder_path)

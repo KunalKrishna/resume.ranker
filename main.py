@@ -38,6 +38,7 @@ def get_PID_embeddings_binding_list(PID_list, cv_embeddings_list) :
     Returns:
         list: A list of dictionaries in the format {"id": pid, "values": cv_embedding}.
     """
+    #TODO supply list of PIDs instead of list of pdf file names
     n = min(len(PID_list), len(cv_embeddings_list))
     vectors = [{"id": PID_list[i], "values": cv_embeddings_list[i]} for i in range(n)]
     return vectors
@@ -79,23 +80,17 @@ def generate_embedding_values_list(raw_data_list, pc):
         )
         '''
 
-        # Extract the list of embeddings
-        # cv_embeddings_list = [entry['values'] for entry in results.data]
-        #TODO zip embeddings with PID as key [{'PID' : [embeddings]}, {'PID' : [embeddings]},{'PID' : [embeddings]}]
-
         pdf_files_list = [list(item.keys())[0] for item in raw_data_list]
-        # Extract the list of embeddings
         cv_embeddings_list = [entry['values'] for entry in results.data]
         vectors = get_PID_embeddings_binding_list(pdf_files_list, cv_embeddings_list)
         '''
-        len(results.data) # number of vector embeddings created (one for each cv)
-        results.data[0]['values'] # represents vector embeddign for 0th indexed resume
-        values_list = results.data[0]['values']
-        print(f"Embeddings for first resume: {values_list}")
-        # Get dimension
-        print(f"Dimension of each Embedding : {len(values_list)}")
+            vectors=[
+                {"id": "A", "values": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]},
+                {"id": "D", "values": [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]}
+            ]
         '''
-        return vectors #results.data #cv_embeddings_list
+
+        return vectors 
     except Exception as e:
         print(f"Error generating embeddings: {e}")
         return None
