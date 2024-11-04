@@ -19,7 +19,6 @@ def extract_text_from_pdf_page(file_path, page_number=0):
     else:
         raise ValueError(f"Page number {page_number} exceeds number of pages in PDF.")
 
-
 def extract_all_text_from_pdf(file_path):
     """
     Extracts text from a specific PDF.
@@ -45,4 +44,3 @@ def extract_all_text_from_pdf(file_path):
             print(f"Error reading {file_path}: {e}")
 
     return full_text  # Return concatenated text of all page
-
