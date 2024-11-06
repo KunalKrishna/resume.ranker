@@ -20,13 +20,13 @@ def get_pinecone_client():
             print("Pinecone client connection successful!")
         except Exception as e:
             print(f"Error creating pinecone client: {e}. \nPlease ensure PINECONE_API_KEY is correct.")
-            _pinecone_client = None  # Reset if there was an error
+            _pinecone_client = None  # Reset
     else:
         print("Using existing Pinecone client instance.")
     
     return _pinecone_client
 
-def get_PID_embeddings_binding_list(PID_list, cv_embeddings_list) :
+def get_PID_embeddings_vector_list(PID_list, cv_embeddings_list) :
     """
     Create a list of dictionaries with 'id' and 'values' keys, pairing each entry in PID_list with its
     corresponding embedding from cv_embeddings_list.
@@ -43,7 +43,7 @@ def get_PID_embeddings_binding_list(PID_list, cv_embeddings_list) :
     vectors = [{"id": PID_list[i], "values": cv_embeddings_list[i]} for i in range(n)]
     return vectors
 
-def generate_embedding_values_list(raw_data_list, pc):
+def generate_cv_embeddings_list(pc, raw_data_list):
     """
     Generates embeddings for the provided raw data and returns the values_list.
 
@@ -82,7 +82,7 @@ def generate_embedding_values_list(raw_data_list, pc):
 
         pdf_files_list = [list(item.keys())[0] for item in raw_data_list]
         cv_embeddings_list = [entry['values'] for entry in results.data]
-        vectors = get_PID_embeddings_binding_list(pdf_files_list, cv_embeddings_list)
+        vectors = get_PID_embeddings_vector_list(pdf_files_list, cv_embeddings_list)
         '''
             vectors=[
                 {"id": "A", "values": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]},
@@ -95,7 +95,7 @@ def generate_embedding_values_list(raw_data_list, pc):
         print(f"Error generating embeddings: {e}")
         return None
 
-def upsert_embeddings(vectors, pc):
+def upsert_cv_embeddings(vectors, pc):
     #1. create index 
     #2. use the index to upsert 
     index_name= PINECONESettings._index_name
@@ -109,8 +109,10 @@ def upsert_embeddings(vectors, pc):
                 region=PINECONESettings._region
             )
         )
-
-    while not pc.describe_collection(index_name).status['ready']:
+    # Check if the index is ready
+    index_description = pc.describe_index(PINECONESettings._index_name)
+    is_ready = index_description["status"]["ready"]
+    while not is_ready:
         time.sleep(1)
 
     # Get the index to upsert vectors
@@ -121,18 +123,67 @@ def upsert_embeddings(vectors, pc):
     )
     print(index)
 
+def get_embedding(pc, query_str):#TODO finish
+    query_text = "Your search text here"
+    query_vector = []
+    
+    # Creating an Index 
+    # https://colab.research.google.com/github/pinecone-io/examples/blob/master/docs/semantic-search.ipynb#scrollTo=PMmTOTzH6LNA
+    index_name = PINECONESettings._index_name #"semantic-search-fast" 
+    # existing_indexe_names = [
+    #     index_info["name"] for index_info in pc.list_indexes()
+    # ]
+    # if index_name not in existing_indexe_names:
+    q_results = pc.inference.embed(
+        model= PINECONESettings._model,  
+        inputs= [query_str],
+        parameters={
+            "input_type": "passage",
+            "truncate": "END"
+        }
+    )
+    print(q_results)
+    print("dimension of ques_str vector = ",end="")
+    print(len(q_results.data[0]['values']))
+    values_list = q_results.data[0]['values'] 
+
+    r= index_name.query(
+        vector=values_list,
+        top_k=2,
+        include_values=False
+    )
+    print(r)
+
+    # response = index.query(
+    #     namespace="ns1",
+    #     vector=[0.1, 0.3],
+    #     top_k=2,
+    #     include_values=True,
+    #     include_metadata=True,
+    #     filter={"genre": {"$eq": "action"}}
+    # )
+    # print(response)
+    return r
+
 if __name__ == "__main__":
     cv_dir = ""
 
     # list of text/content of each resume 
     # TODO fileter content - remove personal details, page number etc. 
+    
     cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path) #[{'PID','text'},{'PID','text'},{'PID','text'}]
 
     # create pinecone client
     pc = get_pinecone_client()
 
     # generate respective vector embeddings for each CV
-    vectors = generate_embedding_values_list(cv_raw_data_list, pc)
+    vectors = generate_cv_embeddings_list(pc, cv_raw_data_list)
 
     # save embeddings in vector database
-    upsert_embeddings(vectors, pc)
+    upsert_cv_embeddings(vectors, pc)
+
+    query_str = "flutter developer"
+
+    query_vector = get_embedding( pc, query_str)
+
+    #execute query & verify result

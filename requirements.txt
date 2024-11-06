@@ -6,5 +6,8 @@ PyPDF2
 # for pinecode
 pinecone
 
+# for encoding query string
+sentence_transformers
+
 # for dataframe 
 pandas
