@@ -4,7 +4,6 @@ from config import PINECONESettings
 from read_resumes import extract_texts_from_pdfs_in_folder
 import time
 
-# creat index
 def get_or_create_index(pinecone_client, index_name):
     #if not exists
     if not pinecone_client.has_index(index_name):
@@ -18,6 +17,12 @@ def get_or_create_index(pinecone_client, index_name):
                 region=PINECONESettings._region
             )
         )
+        # Check if the index is ready
+        # index_description = pc.describe_index(PINECONESettings._index_name)
+        # is_ready = index_description["status"]["ready"]
+        # while not is_ready:
+        #     time.sleep(1)
+
         while not pinecone_client.describe_collection(index_name).status['ready']:
             time.sleep(1)
         print(f"index created successfully with name {index_name}")

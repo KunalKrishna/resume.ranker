@@ -4,7 +4,6 @@ import os
 import time
 from config import PINECONESettings
 from read_resumes import extract_texts_from_pdfs_in_folder
-from string import ascii_uppercase
 import pandas as pd
 
 load_dotenv()
@@ -95,14 +94,14 @@ def generate_cv_embeddings_list(pc, raw_data_list):
         print(f"Error generating embeddings: {e}")
         return None
 
-def upsert_cv_embeddings(vectors, pc):
+def upsert_cv_embeddings(pc, vectors):
     #1. create index 
     #2. use the index to upsert 
     index_name= PINECONESettings._index_name
     if index_name not in pc.list_indexes():
         pc.create_index(
             name= index_name,
-            dimension= len(cv_raw_data_list[0]),
+            dimension= len(vectors[0]['values']),
             metric= PINECONESettings._metric,  # [cosine| dotproduct| euclidean] --read more: https://docs.pinecone.io/guides/indexes/understanding-indexes#euclidean
             spec= ServerlessSpec(
                 cloud=PINECONESettings._cloud,
@@ -123,18 +122,11 @@ def upsert_cv_embeddings(vectors, pc):
     )
     print(index)
 
-def get_embedding(pc, query_str):#TODO finish
+def get_query_embedding(pc, query_str):#TODO finish
     query_text = "Your search text here"
     query_vector = []
     
-    # Creating an Index 
-    # https://colab.research.google.com/github/pinecone-io/examples/blob/master/docs/semantic-search.ipynb#scrollTo=PMmTOTzH6LNA
-    index_name = PINECONESettings._index_name #"semantic-search-fast" 
-    # existing_indexe_names = [
-    #     index_info["name"] for index_info in pc.list_indexes()
-    # ]
-    # if index_name not in existing_indexe_names:
-    q_results = pc.inference.embed(
+    results = pc.inference.embed(
         model= PINECONESettings._model,  
         inputs= [query_str],
         parameters={
@@ -142,28 +134,37 @@ def get_embedding(pc, query_str):#TODO finish
             "truncate": "END"
         }
     )
-    print(q_results)
+    print(results)
     print("dimension of ques_str vector = ",end="")
-    print(len(q_results.data[0]['values']))
-    values_list = q_results.data[0]['values'] 
+    print(len(results.data[0]['values']))
+    vector = results.data[0]['values'] 
+    return vector
 
-    r= index_name.query(
-        vector=values_list,
-        top_k=2,
+def execute_query(pc, query_vector, top_k):
+    # Creating an Index 
+
+    index = pc.Index(PINECONESettings._index_name)
+
+    # Execute Query
+    results= index.query(
+        vector=query_vector,
+        top_k=top_k,
         include_values=False
     )
-    print(r)
+    print(results)
+    return results
 
-    # response = index.query(
-    #     namespace="ns1",
-    #     vector=[0.1, 0.3],
-    #     top_k=2,
+    # index_name.query(
+    #     namespace="example-namespace",
+    #     vector=[0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
+    #     filter={
+    #         "genre": {"$eq": "documentary"}
+    #     },
+    #     top_k=3,
     #     include_values=True,
     #     include_metadata=True,
     #     filter={"genre": {"$eq": "action"}}
     # )
-    # print(response)
-    return r
 
 if __name__ == "__main__":
     cv_dir = ""
@@ -171,7 +172,8 @@ if __name__ == "__main__":
     # list of text/content of each resume 
     # TODO fileter content - remove personal details, page number etc. 
     
-    cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path) #[{'PID','text'},{'PID','text'},{'PID','text'}]
+    cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path)
+        #[{'PID','text'},{'PID','text'},{'PID','text'}]
 
     # create pinecone client
     pc = get_pinecone_client()
@@ -180,10 +182,28 @@ if __name__ == "__main__":
     vectors = generate_cv_embeddings_list(pc, cv_raw_data_list)
 
     # save embeddings in vector database
-    upsert_cv_embeddings(vectors, pc)
+    upsert_cv_embeddings(pc, vectors)
 
-    query_str = "flutter developer"
+    # query_str = "flutter developer"
+    # query_vector = get_query_embedding( pc, query_str)
 
-    query_vector = get_embedding( pc, query_str)
+    # #execute query : find top_k matches
+    # top_k = 2
+    # final_matches= execute_query(pc, query_vector, top_k)
+    # final_matches
+    # print(final_matches)
 
-    #execute query & verify result
+    query_str = "java developer"
+
+    query_vector = get_query_embedding( pc, query_str)
+
+    #execute query : find top_k matches
+    top_k = 2
+    final_matches= execute_query(pc, query_vector, top_k)
+    final_matches
+    print(final_matches)
+
+# {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
+#              {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
+#  'namespace': '',
+#  'usage': {'read_units': 5}}
