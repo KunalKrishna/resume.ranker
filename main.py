@@ -166,6 +166,19 @@ def execute_query(pc, query_vector, top_k):
     #     filter={"genre": {"$eq": "action"}}
     # )
 
+def test(pc, query_list, top_k):
+    for query in query_list: 
+        query_vector = get_query_embedding(pc, query_str)
+        final_matches= execute_query(pc, query_vector, top_k)
+        for match in final_matches['matches']:
+            print(match['id'])
+
+    # {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
+    #              {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
+    #  'namespace': '',
+    #  'usage': {'read_units': 5}}
+
+
 if __name__ == "__main__":
     cv_dir = ""
 
@@ -184,26 +197,9 @@ if __name__ == "__main__":
     # save embeddings in vector database
     upsert_cv_embeddings(pc, vectors)
 
-    # query_str = "flutter developer"
-    # query_vector = get_query_embedding( pc, query_str)
-
-    # #execute query : find top_k matches
-    # top_k = 2
-    # final_matches= execute_query(pc, query_vector, top_k)
-    # final_matches
-    # print(final_matches)
-
-    query_str = "java developer"
-
-    query_vector = get_query_embedding( pc, query_str)
-
-    #execute query : find top_k matches
-    top_k = 2
-    final_matches= execute_query(pc, query_vector, top_k)
-    final_matches
-    print(final_matches)
-
-# {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
-#              {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
-#  'namespace': '',
-#  'usage': {'read_units': 5}}
+    query_list = [
+        "flutter developer", 
+        "java developer", 
+        "social media campaigner", 
+        "C# coder"]
+    test(pc, query_list, top_k=2)
