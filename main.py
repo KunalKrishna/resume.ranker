@@ -6,13 +6,14 @@ from config import PINECONESettings
 from read_resumes import extract_texts_from_pdfs_in_folder
 import pandas as pd
 
-load_dotenv()
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-
 _pinecone_client = None
 
 def get_pinecone_client():
     global _pinecone_client
+
+    load_dotenv()
+    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+    
     if _pinecone_client is None:
         try:
             _pinecone_client = Pinecone(api_key=PINECONE_API_KEY)
@@ -120,7 +121,7 @@ def upsert_cv_embeddings(pc, vectors):
     index.upsert(
         vectors=vectors
     )
-    print(index)
+    print(f"{len(vectors)} : vectors upsurted successfully! ")
 
 def get_query_embedding(pc, query_str):#TODO finish
     query_text = "Your search text here"
@@ -134,10 +135,10 @@ def get_query_embedding(pc, query_str):#TODO finish
             "truncate": "END"
         }
     )
-    print(results)
-    print("dimension of ques_str vector = ",end="")
-    print(len(results.data[0]['values']))
+    # print("dimension of ques_str vector = ",end="")
+    # print(len(results.data[0]['values']))
     vector = results.data[0]['values'] 
+    print(f"{query_str} : embedded.")
     return vector
 
 def execute_query(pc, query_vector, top_k):
@@ -151,7 +152,6 @@ def execute_query(pc, query_vector, top_k):
         top_k=top_k,
         include_values=False
     )
-    print(results)
     return results
 
     # index_name.query(
@@ -166,40 +166,35 @@ def execute_query(pc, query_vector, top_k):
     #     filter={"genre": {"$eq": "action"}}
     # )
 
-def test(pc, query_list, top_k):
+def _test(pc, query_list, top_k):
     for query in query_list: 
-        query_vector = get_query_embedding(pc, query_str)
+        query_vector = get_query_embedding(pc, query)
+        print(f"\nFinding Top {top_k} matches for {query} : ")
         final_matches= execute_query(pc, query_vector, top_k)
         for match in final_matches['matches']:
             print(match['id'])
-
-    # {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
-    #              {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
-    #  'namespace': '',
-    #  'usage': {'read_units': 5}}
-
+'''
+    {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
+                 {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
+     'namespace': '',
+     'usage': {'read_units': 5}}
+'''
 
 if __name__ == "__main__":
-    cv_dir = ""
+    pc = get_pinecone_client() # create pinecone client
 
-    # list of text/content of each resume 
-    # TODO fileter content - remove personal details, page number etc. 
-    
-    cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path)
-        #[{'PID','text'},{'PID','text'},{'PID','text'}]
+    # TODO filter content - remove personal details, page number etc. 
+    # cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path)
+    #     #[{'PID','text'},{'PID','text'},{'PID','text'}]
 
-    # create pinecone client
-    pc = get_pinecone_client()
+    # vectors = generate_cv_embeddings_list(pc, cv_raw_data_list) # Generate respective vector embeddings for each CV
 
-    # generate respective vector embeddings for each CV
-    vectors = generate_cv_embeddings_list(pc, cv_raw_data_list)
-
-    # save embeddings in vector database
-    upsert_cv_embeddings(pc, vectors)
+    # upsert_cv_embeddings(pc, vectors) # Save embeddings in vector database
 
     query_list = [
         "flutter developer", 
         "java developer", 
         "social media campaigner", 
         "C# coder"]
-    test(pc, query_list, top_k=2)
+    top_k=2
+    _test(pc, query_list, top_k)

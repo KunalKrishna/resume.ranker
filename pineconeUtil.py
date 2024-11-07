@@ -25,7 +25,7 @@ def get_or_create_index(pinecone_client, index_name):
 
         while not pinecone_client.describe_collection(index_name).status['ready']:
             time.sleep(1)
-        print(f"index created successfully with name {index_name}")
+        print(f"index created successfully with name: {index_name}")
     #if already exists
     index = pinecone_client.Index(index_name)
     return index
