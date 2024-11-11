@@ -138,12 +138,11 @@ def get_query_embedding(pc, query_str):#TODO finish
     # print("dimension of ques_str vector = ",end="")
     # print(len(results.data[0]['values']))
     vector = results.data[0]['values'] 
-    print(f"{query_str} : embedded.")
+    #print(f"{query_str} : embedded.")
     return vector
 
 def execute_query(pc, query_vector, top_k):
     # Creating an Index 
-
     index = pc.Index(PINECONESettings._index_name)
 
     # Execute Query
@@ -154,25 +153,15 @@ def execute_query(pc, query_vector, top_k):
     )
     return results
 
-    # index_name.query(
-    #     namespace="example-namespace",
-    #     vector=[0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
-    #     filter={
-    #         "genre": {"$eq": "documentary"}
-    #     },
-    #     top_k=3,
-    #     include_values=True,
-    #     include_metadata=True,
-    #     filter={"genre": {"$eq": "action"}}
-    # )
-
 def _test(pc, query_list, top_k):
     for query in query_list: 
         query_vector = get_query_embedding(pc, query)
         print(f"\nFinding Top {top_k} matches for {query} : ")
         final_matches= execute_query(pc, query_vector, top_k)
+        print(final_matches)
         for match in final_matches['matches']:
             print(match['id'])
+            print(match['score'])
 '''
     {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
                  {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
@@ -183,18 +172,14 @@ def _test(pc, query_list, top_k):
 if __name__ == "__main__":
     pc = get_pinecone_client() # create pinecone client
 
-    # Get the directory of the current file (main.py)
-    current_dir = os.path.dirname(__file__)
-
-    # Construct the relative path to the CV folder
-    cv_folder_path = os.path.join(current_dir, 'CV') #PINECONESettings.cv_repo_name
+    cv_folder_path = os.path.join(os.path.dirname(__file__), PINECONESettings.cv_repo_name)
 
     # TODO filter content - remove personal details, page number etc. 
     # old technique(didn't gave satisfactory result) : 
-    # cv_raw_data_list = extract_texts_from_pdfs_in_folder(cv_folder_path)
-        #[{'PID','text'},{'PID','text'},{'PID','text'}]
+        # cv_raw_data_list = extract_texts_from_pdfs_in_folder(cv_folder_path)
+            #[{'PID','text'},{'PID','text'},{'PID','text'}]
     # new library : 
-    cv_raw_data_list = extract_texts_from_pdfs_in_folder_v2(cv_folder_path)
+    cv_raw_data_list = asyncio.run(extract_texts_from_pdfs_in_folder_v2(cv_folder_path))
 
     vectors = generate_cv_embeddings_list(pc, cv_raw_data_list) # Generate respective vector embeddings for each CV
 
@@ -203,7 +188,9 @@ if __name__ == "__main__":
     query_list = [
         "flutter developer", 
         "java developer", 
-        "social media campaigner", 
-        "C# coder"]
+        "java developer with 2 year experience", 
+        "Frontend Developer with experience in Tailwind", 
+        "Full Stack Developer with experience in Flutter and working knowledge of C#", 
+        "Google Cloud and Amazon Web Service experienced Software developer"]
     top_k=2
     _test(pc, query_list, top_k)
