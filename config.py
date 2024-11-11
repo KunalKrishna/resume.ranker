@@ -8,4 +8,4 @@ class PINECONESettings:
     
     _index_name= "cv-index" #required for saving & querying in vector db 
 
-    cv_repo_rel_path="resume.ranker/CV"
+    cv_repo_name="CV"

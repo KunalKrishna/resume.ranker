@@ -183,13 +183,19 @@ def _test(pc, query_list, top_k):
 if __name__ == "__main__":
     pc = get_pinecone_client() # create pinecone client
 
+    # Get the directory of the current file (main.py)
+    current_dir = os.path.dirname(__file__)
+
+    # Construct the relative path to the CV folder
+    cv_folder_path = os.path.join(current_dir, 'CV') #PINECONESettings.cv_repo_name
+
     # TODO filter content - remove personal details, page number etc. 
-    # cv_raw_data_list = extract_texts_from_pdfs_in_folder(PINECONESettings.cv_repo_rel_path)
-    #     #[{'PID','text'},{'PID','text'},{'PID','text'}]
+    cv_raw_data_list = extract_texts_from_pdfs_in_folder(cv_folder_path)
+        #[{'PID','text'},{'PID','text'},{'PID','text'}]
 
-    # vectors = generate_cv_embeddings_list(pc, cv_raw_data_list) # Generate respective vector embeddings for each CV
+    vectors = generate_cv_embeddings_list(pc, cv_raw_data_list) # Generate respective vector embeddings for each CV
 
-    # upsert_cv_embeddings(pc, vectors) # Save embeddings in vector database
+    upsert_cv_embeddings(pc, vectors) # Save embeddings in vector database
 
     query_list = [
         "flutter developer", 

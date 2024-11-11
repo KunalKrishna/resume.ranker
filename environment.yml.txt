@@ -1,0 +1,17 @@
+# environment.yaml
+# conda install -f local.yml
+
+name: resume-env
+channels:
+  - defaults
+  - anaconda
+  - conda-forge
+  - r
+  - bioconda
+dependencies:
+  - python-dotenv
+  - ocrmypdf
+  - pdftotext
+  - pinecone
+#  - pip:
+#    - -r file:requirements.txt

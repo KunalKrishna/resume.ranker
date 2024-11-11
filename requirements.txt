@@ -1,13 +1,21 @@
 # python libraries required for the project
+# 1. create .venv --> activate
+# 2. pip install -r requirements.txt
+
+# for fetching API key saved in system - read about lib here : https://pypi.org/project/python-dotenv/
+python-dotenv
 
 # for reading pdf
 PyPDF2
+ocrmypdf    # pip install --user ocrmypdf tesseract // conda install ocrmypdf
+pdftotext   # pip install pdftotext // conda install -c conda-forge poppler
+pypdfium2   # python -m pip install -U pypdfium2 https://pypi.org/project/pypdfium2/
+PyMuPDF     # pip install PyMuPDF
 
 # for pinecode
 pinecone
-
 # for encoding query string
-sentence_transformers
-
+    # sentence_transformers
 # for dataframe 
 pandas
+# pip install python-dotenv  pandas  pinecone PyPDF2 ocrmypdf pdftotext
