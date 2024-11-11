@@ -4,7 +4,6 @@ import pdftotext
 import ocrmypdf
 import tempfile, io, asyncio
 
-
 async def ocrPDF(daf_binary, force_ocr=False):
     ocr_output_data = daf_binary
     with tempfile.NamedTemporaryFile(suffix='.pdf') as pdf_output:
@@ -24,56 +23,62 @@ async def parsePDFUsingPDFToText(pdf_binary, full_text=True):
         )
     stdout, _ = process.communicate(input=pdf_binary)
     text = stdout.decode('utf-8').strip()
-    print(text)
-    # if full_text:
-    #     return text
-    # pages_text = await getPageWiseText(text)
-    # return pages_text
+    return(text)
 
-# def read_pdftotext(pdf_binary, full_text=True):
-#     pdfToTextCommand = ['pdftotext', '-layout', '-', '-']
-#     process = subprocess.Popen(
-#         pdfToTextCommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-#     )
-#     stout, _ = process.communicate(input=pdf_binary)
-#     text = stout.decode('utf-8').strip()
-
-#     print(text)
-#     return text
-
-# def foo(folder_path):
-#     pdf_files = [file for file in os.listdir(folder_path) if file.endswith('.pdf')]
-
-#     if not pdf_files:
-#         print("No PDF files found in the specified folder.")
-#         return
-
-#     raw_data =[]
-#     for pdf_file in pdf_files:
-#         file_path = os.path.join(folder_path, pdf_file)
-#         with open(file_path,"rb") as pdf_binary : 
-#             pdf_text = read_pdftotext(pdf_binary, True)
-#             raw_data.append(pdf_text)
-#         # with open(filename, "rb") as f:
-#         # pdf = pdftotext.PDF(f) 
-#     print(raw_data)
-#     return raw_data
-
-async def main():
-    pdf_path = 'D:/523/Resume.classifier/resume.ranker/CV/Yashas_Majmudar_Resume.pdf'
-    
-    # Read the PDF as binary data
+async def parsePDF(pdf_path):
     with open(pdf_path, 'rb') as pdf_file:
         pdf_binary = pdf_file.read()
 
-    await parsePDFUsingPDFToText(pdf_binary)
+    text = await parsePDFUsingPDFToText(pdf_binary)
+    return text
 
-asyncio.run(main())
 
-# if __name__ == "__main__":
-#     folder_path = "D:/523/Resume.classifier/resume.ranker/CV" #Path("D:/523/Resume.classifier/resume.ranker/CV")  
+if __name__ == "__main__":
+    pdf_path = 'D:/523/Resume.classifier/resume.ranker/CV/Yashas_Majmudar_Resume.pdf'
+    print (asyncio.run(parsePDF(pdf_path)))
 
-    
+'''
+import pypdfium2 as pdfium
+import PyMuPDF as pymu
+
+def read_ocrmypdf(folder_path):
+    pdf_files = [file for file in os.listdir(folder_path) if file.endswith('.pdf')]
+
+    if not pdf_files:
+        print("No PDF files found in the specified folder.")
+        return
+
+    for pdf_file in pdf_files:
+        file_path = os.path.join(folder_path, pdf_file)
+        print(f"Extracting text from {pdf_file}...")
+
+        try:
+            # extracted_text = extract_text_from_pdf_page(file_path, page_number=0)
+            extracted_text = extract_all_text_from_pdf(file_path)
+            print(extracted_text,end="\n************\n")
+            
+            #print(f"Text from {pdf_file}:\n{extracted_text}\n{'-'*40}\n{'-'*40}\n")
+            
+        except Exception as e:
+            print(f"Error reading {pdf_file}: {e}")
+
+def read_pdfium() :
+    pdf = pdfium.PdfDocument("D:/523/Resume.classifier/resume.ranker/CV/Grace_Hopper.pdf") #./path/to/document.pdf 
+    version = pdf.get_version()  # get the PDF standard version
+    n_pages = len(pdf)  # get the number of pages in the document
+    page = pdf[0]  # load a page
+    textpage = page.get_textpage()
+    print(textpage)
+
+def read_pdfium2(pdf_path):
+    with pdfium.PdfDocument(pdf_path) as pdf:
+        text = ""
+        for page in pdf:
+            textpage = page.get_textpage()
+            text += textpage.get
+            textpage.close()
+    return text
+'''
 
 '''
 successFUL

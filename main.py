@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import time
 from config import PINECONESettings
-from read_resumes import extract_texts_from_pdfs_in_folder
+from read_resumes import *
 import pandas as pd
 
 _pinecone_client = None
@@ -190,8 +190,11 @@ if __name__ == "__main__":
     cv_folder_path = os.path.join(current_dir, 'CV') #PINECONESettings.cv_repo_name
 
     # TODO filter content - remove personal details, page number etc. 
-    cv_raw_data_list = extract_texts_from_pdfs_in_folder(cv_folder_path)
+    # old technique(didn't gave satisfactory result) : 
+    # cv_raw_data_list = extract_texts_from_pdfs_in_folder(cv_folder_path)
         #[{'PID','text'},{'PID','text'},{'PID','text'}]
+    # new library : 
+    cv_raw_data_list = extract_texts_from_pdfs_in_folder_v2(cv_folder_path)
 
     vectors = generate_cv_embeddings_list(pc, cv_raw_data_list) # Generate respective vector embeddings for each CV
 
