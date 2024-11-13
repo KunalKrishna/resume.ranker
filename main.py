@@ -159,9 +159,9 @@ def _test(pc, query_list, top_k):
         print(f"\nFinding Top {top_k} matches for {query} : ")
         final_matches= execute_query(pc, query_vector, top_k)
         print(final_matches)
-        for match in final_matches['matches']:
-            print(match['id'])
-            print(match['score'])
+        # for match in final_matches['matches']:
+        #     print(match['id'])
+        #     print(match['score'])
 '''
     {'matches': [{'id': 'Grace_Hopper.pdf', 'score': 0.809550643, 'values': []},
                  {'id': 'Keisha_R_Brown.pdf', 'score': 0.79268086, 'values': []}],
@@ -188,7 +188,13 @@ if __name__ == "__main__":
     query_list = [
         "flutter developer", 
         "java developer", 
-        "java developer with 2 year experience", 
+        "java developer with 2 years experience", 
+        "java developer with two years experience", 
+        "Spring boot developer with some experience in frontend", 
+        "Marketing consultant", 
+        "Product Manager", 
+        "Social Media Manager", 
+        "Data Analyst", 
         "Frontend Developer with experience in Tailwind", 
         "Full Stack Developer with experience in Flutter and working knowledge of C#", 
         "Google Cloud and Amazon Web Service experienced Software developer"]
